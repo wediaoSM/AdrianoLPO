@@ -47,3 +47,45 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Manual safelist fallback: define missing custom color utilities so they appear in production builds */
+@layer utilities {
+  /* BG - luxury */
+  .bg-luxury-950 { background-color: #0c0a09; }
+  .bg-luxury-900 { background-color: #1c1917; }
+  .bg-luxury-800 { background-color: #292524; }
+  .bg-luxury-700 { background-color: #44403c; }
+  .bg-luxury-950\/40 { background-color: rgba(12,10,9,0.4); }
+  .bg-luxury-950\/50 { background-color: rgba(12,10,9,0.5); }
+  .bg-luxury-950\/80 { background-color: rgba(12,10,9,0.8); }
+  .bg-luxury-950\/95 { background-color: rgba(12,10,9,0.95); }
+
+  /* BG - gold */
+  .bg-gold-500 { background-color: #9e8038; }
+  .bg-gold-600 { background-color: #7f6526; }
+  .bg-gold-700 { background-color: #614b18; }
+  .bg-gold-500\/10 { background-color: rgba(158,128,56,0.10); }
+  .bg-gold-500\/5 { background-color: rgba(158,128,56,0.05); }
+  .bg-gold-600\/10 { background-color: rgba(127,101,38,0.10); }
+  .bg-gold-600\/20 { background-color: rgba(127,101,38,0.20); }
+
+  /* Text colors */
+  .text-gold-500 { color: #9e8038; }
+  .text-gold-200 { color: #d6c69a; }
+  .text-gold-400 { color: #b69a55; }
+  .text-gray-200 { color: #e8e8e8; }
+
+  /* Border colors */
+  .border-gold-500 { border-color: rgba(158,128,56,1); }
+  .border-gold-500\/30 { border-color: rgba(158,128,56,0.30); }
+  .border-luxury-800 { border-color: #292524; }
+
+  /* Shadows */
+  .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6); }
+  .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4); }
+
+  /* Backdrop blur classes */
+  .backdrop-blur-md { --tw-backdrop-blur: blur(8px); -webkit-backdrop-filter: var(--tw-backdrop-blur); backdrop-filter: var(--tw-backdrop-blur); }
+  .backdrop-blur-sm { --tw-backdrop-blur: blur(4px); -webkit-backdrop-filter: var(--tw-backdrop-blur); backdrop-filter: var(--tw-backdrop-blur); }
+  .backdrop-blur-xl { --tw-backdrop-blur: blur(12px); -webkit-backdrop-filter: var(--tw-backdrop-blur); backdrop-filter: var(--tw-backdrop-blur); }
+}
