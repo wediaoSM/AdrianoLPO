@@ -6,12 +6,11 @@ module.exports = {
       './**/*.{js,ts,jsx,tsx}'
     ],
     safelist: [
-      /bg-(luxury|gold)(-\d{2,3})?/,
-      /text-(gray|gold)-(\d{3})/,
-      /backdrop-blur.*/,
-      /focus:ring-gold.*/,
-      /focus:ring-offset-luxury.*/,
-      /shadow-.*/
+      'bg-luxury-950','bg-luxury-900','bg-luxury-800','bg-luxury-700','bg-luxury-600',
+      'bg-gold-600','bg-gold-500','bg-gold-400','bg-gold-300','bg-gold-200',
+      'text-gray-200','text-gray-400','text-gray-500','text-gold-100','text-gold-300',
+      'backdrop-blur-md','backdrop-blur-sm','backdrop-blur-xl','shadow-2xl','shadow-lg',
+      'focus:ring-gold-500','focus:ring-offset-luxury-950'
     ]
   },
   // safelist removido daqui, fica só em content.safelist
