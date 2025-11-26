@@ -46,58 +46,10 @@
       });
     </script>
     
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              serif: ['Cinzel', 'serif'],
-              sans: ['Montserrat', 'sans-serif'],
-            },
-            colors: {
-              gold: {
-                50: '#F9F5EB',
-                100: '#E8DFC5',
-                200: '#D6C69A',
-                300: '#C4AD70',
-                400: '#B69A55', // Muted Gold
-                500: '#9E8038', // Base Classic Gold
-                600: '#7F6526',
-                700: '#614B18',
-                800: '#453410',
-                900: '#2A1F08',
-              },
-              luxury: {
-                // PALETA MARROM EXTRA DARK (Deep Espresso)
-                950: '#0c0a09', // Quase preto quente (Café Torrado)
-                900: '#1c1917', // Marrom muito escuro (Seções)
-                800: '#292524', // Chocolate Amargo (Cards)
-                700: '#44403c', // Hover leve
-                600: '#57534e', // Bordas sutis
-              }
-            },
-            animation: {
-              'fade-up': 'fadeUp 0.8s ease-out forwards',
-              'fade-in': 'fadeIn 1s ease-out forwards',
-            },
-            keyframes: {
-              fadeUp: {
-                '0%': { opacity: '0', transform: 'translateY(20px)' },
-                '100%': { opacity: '1', transform: 'translateY(0)' },
-              },
-              fadeIn: {
-                '0%': { opacity: '0' },
-                '100%': { opacity: '1' },
-              }
-            }
-          }
-        }
-      }
-    </script>
+    <!-- Tailwind CDN removed (configured via PostCSS/Tailwind CLI for production) -->
     <style>
       /* Custom scrollbar for dark theme */
       ::-webkit-scrollbar {
@@ -170,7 +122,7 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+<!-- Vite will inject the built CSS file (ensure index.css is imported in index.tsx) -->
 </head>
   <body class="bg-luxury-950 text-gray-200 antialiased selection:bg-gold-600 selection:text-white">
     <div id="root"></div>
