@@ -227,12 +227,12 @@ const Header = ({ onNavigate }) => {
     <nav className={`relative z-50 transition-all duration-500 ${scrolled ? 'bg-luxury-950/95 backdrop-blur-md py-3 border-b border-luxury-800 shadow-2xl' : 'bg-transparent py-5'}`}>
       <div className="w-full px-6 flex justify-between items-center">
         <a href="#" onClick={() => window.scrollTo(0,0)} className="flex flex-col items-center group cursor-pointer">
-          <span className="font-sans text-sm tracking-[0.15em] text-gold-200 font-medium group-hover:text-gold-400 transition-colors">Adriano</span>
-          <span className="text-[9px] uppercase tracking-[0.25em] text-gray-500 group-hover:text-gold-300 transition-colors font-light">Rodrigo</span>
+          <span className="font-sans text-xs tracking-[0.1em] text-gold-200 font-normal group-hover:text-gold-400 transition-colors">Adriano</span>
+          <span className="text-[8px] uppercase tracking-[0.2em] text-gray-500 group-hover:text-gold-300 transition-colors font-light">Rodrigo</span>
         </a>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex space-x-8">
+        <div className="hidden md:flex space-x-6">
           {NAV_LINKS.map((link) => (
             <a 
               key={link.name} 
@@ -247,7 +247,7 @@ const Header = ({ onNavigate }) => {
                   smoothScrollTo(link.href);
                 }
               }}
-              className="text-[11px] font-normal tracking-wide text-gray-400 hover:text-gold-400 transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gold-500 focus:ring-offset-2 focus:ring-offset-luxury-950 rounded-sm px-2 py-1"
+              className="text-[9px] font-light tracking-[0.15em] uppercase text-gray-500 hover:text-gold-400 transition-all duration-300 cursor-pointer focus:outline-none focus:ring-1 focus:ring-gold-500 rounded-sm px-1.5 py-0.5"
               aria-label={`Navegar para seção ${link.name}`}
             >
               {link.name}
@@ -265,45 +265,66 @@ const Header = ({ onNavigate }) => {
       <div className={`fixed inset-0 z-40 transition-transform ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'} md:hidden`} role="dialog" aria-modal="true">
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsOpen(false)}></div>
         <div className="relative z-50 h-full bg-luxury-950 overflow-auto p-6 flex flex-col">
-          <div className="relative mb-6 border-b border-luxury-800/20 pb-6">
+          <div className="relative mb-4 border-b border-luxury-800/20 pb-4">
             <div className="flex items-center justify-center">
-              <div className="flex items-center gap-3">
-                <div className="text-gold-200 font-serif text-xl tracking-[0.2em]">ADRIANO</div>
-                <div className="text-sm text-gray-400 uppercase tracking-[0.3em]">Mentor</div>
+              <div className="flex items-center gap-2">
+                <div className="text-gold-200 font-serif text-sm tracking-[0.15em]">ADRIANO</div>
+                <div className="text-xs text-gray-400 uppercase tracking-[0.2em]">Mentor</div>
               </div>
             </div>
-            <div className="absolute top-3 right-3">
-              <button ref={closeBtnRef} onClick={() => setIsOpen(false)} aria-label="Fechar menu" className="text-gray-400 hover:text-white p-3 rounded-full bg-white/5">
-                <X />
+            <div className="absolute top-2 right-2">
+              <button ref={closeBtnRef} onClick={() => setIsOpen(false)} aria-label="Fechar menu" className="text-gray-400 hover:text-white p-2 rounded-full bg-white/5">
+                <X size={18} />
               </button>
             </div>
           </div>
 
-          <nav className="mt-6 space-y-4 flex-1 flex flex-col items-center justify-center">
+          <nav className="mt-4 space-y-3 flex-1 flex flex-col items-center justify-center">
             {NAV_LINKS.map((link) => (
               <button
                 key={link.name}
                 onClick={(e) => {
                   e.preventDefault();
                   setIsOpen(false);
-                  if (link.action === 'agenda') {
-                    onNavigate && onNavigate('agenda');
-                  } else if (link.action === 'about') {
-                    onNavigate && onNavigate('about');
-                  } else {
-                    setTimeout(() => smoothScrollTo(link.href), 100);
-                  }
+                  
+                  setTimeout(() => {
+                    if (link.name === 'Rota 360') {
+                      setIsOpen(false);
+                      setTimeout(() => {
+                        const target = document.querySelector('#metodo');
+                        if (target) {
+                          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          try { window.history.replaceState(null, '', '#metodo'); } catch {}
+                        }
+                      }, 400);
+                    } else if (link.action === 'agenda') {
+                      setIsOpen(false);
+                      onNavigate && onNavigate('agenda');
+                    } else if (link.action === 'about') {
+                      setIsOpen(false);
+                      onNavigate && onNavigate('about');
+                    } else {
+                      setIsOpen(false);
+                      setTimeout(() => {
+                        const target = document.querySelector(link.href);
+                        if (target) {
+                          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          try { window.history.replaceState(null, '', link.href); } catch {}
+                        }
+                      }, 400);
+                    }
+                  }, 400);
                 }}
-                className="w-full max-w-[380px] flex items-center gap-4 rounded-xl px-6 py-4 bg-luxury-900 border border-luxury-800/30 hover:border-gold-500/30 transition-all justify-center"
+                className="w-full max-w-[280px] flex items-center gap-3 rounded-xl px-4 py-3 bg-luxury-900 border border-luxury-800/30 hover:border-gold-500/30 transition-all justify-center"
               >
-                <span className="text-gold-500"><link.icon className="w-5 h-5" /></span>
-                <span className="text-center text-xl font-serif uppercase tracking-[0.15em] text-white">{link.name}</span>
+                <span className="text-gold-500"><link.icon className="w-4 h-4" /></span>
+                <span className="text-center text-sm font-light uppercase tracking-[0.12em] text-white">{link.name}</span>
               </button>
             ))}
           </nav>
 
-          <div className="mt-6">
-            <a href={WA_LINK('5511999999999')} target="_blank" rel="noopener noreferrer" onClick={() => setIsOpen(false)} className="w-full inline-flex justify-center items-center gap-3 bg-gold-600 text-black font-bold uppercase tracking-[0.2em] px-5 py-3 rounded-full">
+          <div className="mt-4">
+            <a href={WA_LINK('5511999999999')} target="_blank" rel="noopener noreferrer" onClick={() => setIsOpen(false)} className="w-full inline-flex justify-center items-center gap-2 bg-gold-600 text-black font-semibold uppercase tracking-[0.15em] px-4 py-2.5 rounded-full text-xs">
               Agendar Conversa
             </a>
           </div>
@@ -334,13 +355,12 @@ const Hero = ({ onNavigate }) => {
       {/* Content - Posicionado bem embaixo, longe do rosto */}
       <div className="relative z-10 container mx-auto px-6 pb-8 md:pb-12">
         <div className="max-w-md md:ml-8 lg:ml-16 border-l border-gold-300 pl-6 md:pl-8 py-3">
-          <p className="text-gold-200 text-[9px] font-bold tracking-[0.2em] uppercase mb-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+          <h1 className="font-sans text-2xl md:text-3xl text-white mb-1 leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] font-light tracking-tight">
+            Adriano Rodrigo
+          </h1>
+          <p className="text-gold-200 text-[9px] font-bold tracking-[0.2em] uppercase mb-3 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
             Mentor de Posicionamento
           </p>
-          
-          <h1 className="font-sans text-2xl md:text-3xl text-white mb-3 leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] font-light tracking-tight">
-            Adriano <span className="text-gold-200 font-normal">Rodrigo</span>
-          </h1>
 
           <div className="space-y-1.5 mb-4">
             <p className="text-xs md:text-sm text-white font-light drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] leading-snug">
@@ -351,17 +371,7 @@ const Hero = ({ onNavigate }) => {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button 
-              onClick={(e) => {
-                e.preventDefault();
-                smoothScrollTo('#metodo');
-              }}
-              className="inline-flex justify-center items-center gap-2 px-5 py-2.5 bg-gold-500 text-black tracking-wide text-[10px] font-bold hover:bg-gold-400 transition-all duration-300 shadow-2xl hover:shadow-gold-500/50 rounded-full w-fit cursor-pointer focus:outline-none focus:ring-2 focus:ring-gold-400 focus:ring-offset-2 focus:ring-offset-luxury-950"
-              aria-label="Conhecer a metodologia Rota 360"
-            >
-              Conheça a Rota 360
-            </button>
+          <div className="flex flex-col gap-3">
             <button 
               onClick={(e) => {
                 e.preventDefault();
@@ -1879,10 +1889,10 @@ const AboutModal = ({ onClose }) => {
         
         {/* Header with Image */}
         <div className="relative h-48 md:h-64 overflow-hidden">
-            <img 
+            <img
               src="/bg-sobremim.png"
               alt="Sobre Mim"
-              className="w-full h-full object-cover grayscale-[30%]"
+              className="w-full h-full object-cover object-top grayscale-[30%]"
             />
           <div className="absolute inset-0 bg-gradient-to-t from-luxury-900 via-luxury-900/50 to-transparent"></div>
           
