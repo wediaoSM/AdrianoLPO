@@ -108,10 +108,10 @@ const CARDS = [
     title: 'ROTA 360°',
     subtitle: 'Direção & Clareza',
     description: 'Leitura completa da vida.',
-    image: '/rota.jpg',
+    image: `${import.meta.env.BASE_URL}rota.jpg`,
     icon: <Compass className="w-6 h-6" />,
     link: '#metodo',
-    pdf: '/pdfs/rota360.pdf',
+    pdf: `${import.meta.env.BASE_URL}pdfs/rota360.pdf`,
     action: null
   },
   {
@@ -119,7 +119,7 @@ const CARDS = [
     title: 'AGENDA',
     subtitle: 'Próximos Passos',
     description: 'Eventos e imersões.',
-    image: '/agenda.jpg',
+    image: `${import.meta.env.BASE_URL}agenda.jpg`,
     icon: <Calendar className="w-6 h-6" />,
     link: '#agenda',
     action: 'agenda' // Identificador para ação especial
@@ -129,10 +129,10 @@ const CARDS = [
     title: 'PALESTRA',
     subtitle: 'Visão & Impacto',
     description: 'Para empresas e líderes.',
-    image: '/palestra.jpg',
+    image: `${import.meta.env.BASE_URL}palestra.jpg`,
     icon: <Mic className="w-6 h-6" />,
     link: '#contato',
-    pdf: '/pdfs/palestra.pdf',
+    pdf: `${import.meta.env.BASE_URL}pdfs/palestra.pdf`,
     action: null
   },
   {
@@ -140,10 +140,10 @@ const CARDS = [
     title: 'MENTORIA',
     subtitle: 'Acompanhamento',
     description: 'Ajuste fino de rota.',
-    image: '/mentoria.jpg',
+    image: `${import.meta.env.BASE_URL}mentoria.jpg`,
     icon: <GraduationCap className="w-6 h-6" />,
     link: '#contato',
-    pdf: '/pdfs/mentoria.pdf',
+    pdf: `${import.meta.env.BASE_URL}pdfs/mentoria.pdf`,
     action: null
   }
 ];
@@ -370,7 +370,7 @@ const QuickLinks = ({ onNavigate, onOpenPdfPage }) => {
       {/* Background Texture - Darker */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="/card-bg.jpg" 
+          src={`${import.meta.env.BASE_URL}card-bg.jpg`}
           alt="" 
           loading="lazy"
           decoding="async"
@@ -443,7 +443,7 @@ const MethodSection = () => {
           <div className="md:w-1/2 relative">
                 <div className="relative z-10 overflow-hidden rounded-3xl border border-gold-900/20 shadow-2xl">
                   <img 
-                   src="/metodo.png" 
+                   src={`${import.meta.env.BASE_URL}metodo.png`}
                    alt="Rota 360 Method" 
                    loading="lazy"
                    decoding="async"
@@ -1590,7 +1590,7 @@ const App = () => {
       {/* Desktop: Wallpaper background */}
       <div className="hidden md:block fixed inset-0 z-0">
         <img 
-          src="/wallpaper-bg.jpg" 
+          src={`${import.meta.env.BASE_URL}bg-central.png`}
           alt="" 
           className="w-full h-full object-cover"
         />
