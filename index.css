@@ -1,5 +1,43 @@
-@import "tailwindcss/preflight";
-@import "tailwindcss/utilities";
+@import "tailwindcss";
+
+/* Tailwind v4 Theme Configuration */
+@theme {
+  /* Custom Colors */
+  --color-gold-50: #F9F5EB;
+  --color-gold-100: #E8DFC5;
+  --color-gold-200: #D6C69A;
+  --color-gold-300: #C4AD70;
+  --color-gold-400: #B69A55;
+  --color-gold-500: #9E8038;
+  --color-gold-600: #7F6526;
+  --color-gold-700: #614B18;
+  --color-gold-800: #453410;
+  --color-gold-900: #2A1F08;
+  
+  --color-luxury-600: #57534e;
+  --color-luxury-700: #44403c;
+  --color-luxury-800: #292524;
+  --color-luxury-900: #1c1917;
+  --color-luxury-950: #0c0a09;
+  
+  /* Font Families */
+  --font-family-serif: 'Cinzel', serif;
+  --font-family-sans: 'Montserrat', sans-serif;
+  
+  /* Custom Animations */
+  --animate-fade-up: fadeUp 0.8s ease-out forwards;
+  --animate-fade-in: fadeIn 1s ease-out forwards;
+  
+  @keyframes fadeUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+}
 
 /* Custom styles extracted from index.html */
 
