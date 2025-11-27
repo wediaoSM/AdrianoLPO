@@ -1224,6 +1224,11 @@ const AgendaPage = ({ onBack, events }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredEvents, setFilteredEvents] = useState(events);
+  const [selectedCity, setSelectedCity] = useState('all');
+  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+
+  // Extrair cidades únicas dos eventos
+  const cities = ['all', ...new Set(events.map(e => e.city))];
 
   useEffect(() => {
     setFilteredEvents(events);
@@ -1232,17 +1237,33 @@ const AgendaPage = ({ onBack, events }) => {
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
-    
-    if (query.trim() === '') {
-      setFilteredEvents(events);
-    } else {
-      const filtered = events.filter(event => 
+    applyFilters(query, selectedCity);
+  };
+
+  const handleCityFilter = (city) => {
+    setSelectedCity(city);
+    setIsCityDropdownOpen(false);
+    applyFilters(searchQuery, city);
+  };
+
+  const applyFilters = (query, city) => {
+    let filtered = events;
+
+    // Filtro de cidade
+    if (city !== 'all') {
+      filtered = filtered.filter(event => event.city === city);
+    }
+
+    // Filtro de busca
+    if (query.trim() !== '') {
+      filtered = filtered.filter(event => 
         event.title.toLowerCase().includes(query) ||
         event.city.toLowerCase().includes(query) ||
         event.description.toLowerCase().includes(query)
       );
-      setFilteredEvents(filtered);
     }
+
+    setFilteredEvents(filtered);
   };
 
   return (
@@ -1309,13 +1330,44 @@ const AgendaPage = ({ onBack, events }) => {
               />
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-               <button className="flex items-center justify-center gap-3 bg-luxury-950 hover:bg-luxury-800 text-gray-300 text-sm px-6 py-4 rounded-2xl border border-luxury-600/30 hover:border-gold-500/30 min-w-[180px] transition-all">
-                 Todas as cidades <ChevronDown className="w-4 h-4" />
-               </button>
-               <button className="bg-gold-600 hover:bg-gold-500 text-white font-bold uppercase tracking-wider text-xs px-10 py-4 rounded-2xl transition-all shadow-lg hover:shadow-gold-600/30 w-full sm:w-auto">
-                 Filtrar
-               </button>
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto relative">
+               <div className="relative">
+                 <button 
+                   onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
+                   className="flex items-center justify-center gap-3 bg-luxury-950 hover:bg-luxury-800 text-gray-300 text-sm px-6 py-4 rounded-2xl border border-luxury-600/30 hover:border-gold-500/30 min-w-[180px] transition-all w-full"
+                 >
+                   {selectedCity === 'all' ? 'Todas as cidades' : selectedCity}
+                   <ChevronDown className={`w-4 h-4 transition-transform ${isCityDropdownOpen ? 'rotate-180' : ''}`} />
+                 </button>
+
+                 {isCityDropdownOpen && (
+                   <div className="absolute top-full mt-2 w-full bg-luxury-900 border border-luxury-600/30 rounded-2xl shadow-2xl z-50 overflow-hidden animate-fade-in">
+                     <button
+                       onClick={() => handleCityFilter('all')}
+                       className={`w-full text-left px-6 py-3 text-sm transition-all ${
+                         selectedCity === 'all' 
+                           ? 'bg-gold-600 text-white' 
+                           : 'text-gray-300 hover:bg-luxury-800'
+                       }`}
+                     >
+                       Todas as cidades
+                     </button>
+                     {cities.filter(c => c !== 'all').map((city) => (
+                       <button
+                         key={city}
+                         onClick={() => handleCityFilter(city)}
+                         className={`w-full text-left px-6 py-3 text-sm transition-all ${
+                           selectedCity === city 
+                             ? 'bg-gold-600 text-white' 
+                             : 'text-gray-300 hover:bg-luxury-800'
+                         }`}
+                       >
+                         {city}
+                       </button>
+                     ))}
+                   </div>
+                 )}
+               </div>
             </div>
         </div>
       </div>
