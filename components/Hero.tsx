@@ -15,7 +15,7 @@ export const Hero: React.FC = () => {
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img 
-          src={`${import.meta.env.BASE_URL}hero.png`}
+          src={`${import.meta.env.BASE_URL}hero-v2.png`}
           onError={(e) => {
             e.currentTarget.src = "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1200&auto=format&fit=crop";
           }}
