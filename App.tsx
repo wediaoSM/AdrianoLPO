@@ -25,11 +25,24 @@ import {
   Save,
   Image as ImageIcon,
   UploadCloud,
-  Trash2
+  Trash2,
+  Loader,
+  LogOut,
+  Edit2,
+  Share2,
+  TrendingUp,
+  BarChart3,
+  SortAsc,
+  Eye,
+  MessageCircle
 } from 'lucide-react';
 import { LoginModal } from './src/components/LoginModal';
-import { onAuthChange, logout, isAuthenticated } from './src/services/auth.service';
-import { getAllEvents, createEvent, deleteEvent as deleteEventFromDB } from './src/services/firestore.service';
+import { Toast } from './components/Toast';
+import { ImageCropModal } from './components/ImageCropModal';
+import { onAuthChange, logout as firebaseLogout, isAuthenticated as checkAuth } from './src/services/auth.service';
+import { getAllEvents, createEvent, deleteEvent as deleteEventFromDB, updateEvent } from './src/services/firestore.service';
+import { uploadEventImage } from './src/services/storage.service';
+import { saveToCache, getFromCache } from './src/services/cache.service';
 
 // --- Constants & Data ---
 
@@ -42,7 +55,9 @@ const NAV_LINKS = [
 
 // Default WhatsApp message used across CTAs (URL encoded for links)
 const WHATSAPP_DEFAULT_MESSAGE = 'Olá, vi o site e o método Rota 360. Gostaria de agendar uma sessão para alinhar minha direção e meu posicionamento.';
+const WHATSAPP_PHONE = '5511999999999'; // Substitua pelo seu número
 const WA_LINK = (phone) => `https://wa.me/${phone}?text=${encodeURIComponent(WHATSAPP_DEFAULT_MESSAGE)}`;
+const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; // Substitua pelo seu ID do GA4
 
 // Smooth scroll helper
 const smoothScrollTo = (id) => {
@@ -614,8 +629,9 @@ const Footer = ({ onOpenAdmin }) => {
 
 // --- Admin Modal ---
 
-const AdminModal = ({ onClose, onSave, events, onDelete }) => {
+const AdminModal = ({ onClose, onSave, events, onDelete, onLogout, onUpdate }) => {
   const [activeTab, setActiveTab] = useState('create'); // 'create' or 'manage'
+  const [editingEvent, setEditingEvent] = useState(null); // id do evento em edição
   const [formData, setFormData] = useState({
     title: '',
     city: '',
@@ -626,9 +642,27 @@ const AdminModal = ({ onClose, onSave, events, onDelete }) => {
     image: '',
     status: 'Inscrições Abertas'
   });
+    // Preencher formulário para edição
+    const handleEdit = (event) => {
+      setEditingEvent(event.id);
+      setFormData({
+        title: event.title || '',
+        city: event.city || '',
+        venue: event.venue || '',
+        date: event.date || '',
+        time: event.time || '',
+        description: event.description || '',
+        image: event.image || '',
+        status: event.status || 'Inscrições Abertas',
+      });
+      setActiveTab('create');
+    };
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [tempImageUrl, setTempImageUrl] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const fileInputRef = useRef(null);
   const closeButtonRef = useRef(null);
 
@@ -680,12 +714,25 @@ const AdminModal = ({ onClose, onSave, events, onDelete }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, image: reader.result }));
+        setTempImageUrl(reader.result);
+        setShowCropModal(true);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleCropComplete = (croppedBlob) => {
+    // Converter blob para base64 para preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData(prev => ({ ...prev, image: reader.result }));
+    };
+    reader.readAsDataURL(croppedBlob);
+    // Guardar blob para upload posterior
+    setImageFile(croppedBlob);
   };
 
   const handleClearImage = (e) => {
@@ -698,43 +745,45 @@ const AdminModal = ({ onClose, onSave, events, onDelete }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
     if (!validateForm()) {
       setToast({ type: 'error', message: 'Por favor, preencha todos os campos obrigatórios.' });
       return;
     }
-
     setIsSubmitting(true);
-
-    // Simulate async save
-    setTimeout(() => {
+    if (editingEvent) {
+      // Atualizar evento existente
+      onUpdate(editingEvent, {
+        ...formData,
+        image: formData.image || 'https://images.unsplash.com/photo-1544168190-79c17527004f?q=80&w=800&auto=format&fit=crop',
+      });
+      setToast({ type: 'success', message: 'Evento atualizado com sucesso!' });
+    } else {
+      // Criar novo evento
       onSave({
         ...formData,
-        image: formData.image || 'https://images.unsplash.com/photo-1544168190-79c17527004f?q=80&w=800&auto=format&fit=crop', 
-        schedule: [] 
+        image: formData.image || 'https://images.unsplash.com/photo-1544168190-79c17527004f?q=80&w=800&auto=format&fit=crop',
+        schedule: []
       });
-      
-      // Reset form
-      setFormData({
-        title: '',
-        city: '',
-        venue: '',
-        date: '',
-        time: '',
-        description: '',
-        image: '',
-        status: 'Inscrições Abertas'
-      });
-      
-      setErrors({});
-      setIsSubmitting(false);
       setToast({ type: 'success', message: 'Evento criado com sucesso!' });
-      
-      // Switch to manage tab after short delay
-      setTimeout(() => {
-        setActiveTab('manage');
-      }, 1500);
-    }, 500);
+    }
+    // Reset form e estado de edição
+    setFormData({
+      title: '',
+      city: '',
+      venue: '',
+      date: '',
+      time: '',
+      description: '',
+      image: '',
+      status: 'Inscrições Abertas'
+    });
+    setEditingEvent(null);
+    setErrors({});
+    setIsSubmitting(false);
+    // Volta para aba de gerenciamento após delay
+    setTimeout(() => {
+      setActiveTab('manage');
+    }, 1200);
   };
 
   // Cálculo do uso de espaço
@@ -749,6 +798,18 @@ const AdminModal = ({ onClose, onSave, events, onDelete }) => {
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+      {/* Image Crop Modal */}
+      {showCropModal && tempImageUrl && (
+        <ImageCropModal
+          imageUrl={tempImageUrl}
+          onCropComplete={handleCropComplete}
+          onClose={() => {
+            setShowCropModal(false);
+            setTempImageUrl(null);
+          }}
+        />
+      )}
+
       {/* Toast Notification */}
       {toast && (
         <div className={`fixed top-6 right-6 z-[100] ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-fade-in`}>
@@ -788,9 +849,20 @@ const AdminModal = ({ onClose, onSave, events, onDelete }) => {
                 <p className="text-xs text-gray-500 uppercase tracking-wider">Gerenciar Eventos & Agenda</p>
               </div>
             </div>
-            <button ref={closeButtonRef} onClick={onClose} className="text-gray-500 hover:text-white transition-colors bg-white/5 p-2.5 rounded-xl hover:bg-white/10" aria-label="Fechar modal">
-              <X size={22} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={onLogout}
+                className="text-gray-500 hover:text-red-400 transition-colors bg-white/5 p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2" 
+                aria-label="Sair"
+                title="Logout"
+              >
+                <LogOut size={18} />
+                <span className="text-xs hidden sm:inline">Sair</span>
+              </button>
+              <button ref={closeButtonRef} onClick={onClose} className="text-gray-500 hover:text-white transition-colors bg-white/5 p-2.5 rounded-xl hover:bg-white/10" aria-label="Fechar modal">
+                <X size={22} />
+              </button>
+            </div>
           </div>
           
           {/* Tabs */}
@@ -814,6 +886,16 @@ const AdminModal = ({ onClose, onSave, events, onDelete }) => {
               }`}
             >
               📋 Gerenciar ({events?.length || 0})
+            </button>
+            <button
+              onClick={() => setActiveTab('stats')}
+              className={`px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${
+                activeTab === 'stats'
+                  ? 'bg-gold-600 text-white shadow-lg'
+                  : 'bg-luxury-800 text-gray-400 hover:bg-luxury-700'
+              }`}
+            >
+              📊 Estatísticas
             </button>
           </div>
         </div>
@@ -1003,7 +1085,7 @@ const AdminModal = ({ onClose, onSave, events, onDelete }) => {
                 </button>
               </div>
             </form>
-          ) : (
+          ) : activeTab === 'manage' ? (
             <div className="p-6">
               <div className="mb-4">
                 <h3 className="text-white font-serif text-lg mb-1">Eventos Cadastrados</h3>
@@ -1025,7 +1107,6 @@ const AdminModal = ({ onClose, onSave, events, onDelete }) => {
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        
                         {/* Info */}
                         <div className="flex-grow min-w-0">
                           <div className="flex items-start justify-between gap-2 mb-2">
@@ -1047,20 +1128,27 @@ const AdminModal = ({ onClose, onSave, events, onDelete }) => {
                               {event.status}
                             </span>
                           </div>
-                          
                           <p className="text-gray-600 text-xs mb-3 line-clamp-1">{event.description}</p>
-                          
                           <div className="flex items-center justify-between gap-2">
                             <div className="text-[10px] text-gray-700 truncate">
                               📍 {event.venue}
                             </div>
-                            <button
-                              onClick={() => onDelete(event.id)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex-shrink-0"
-                            >
-                              <Trash2 size={12} />
-                              Excluir
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleEdit(event)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex-shrink-0"
+                              >
+                                <Edit2 size={12} />
+                                Editar
+                              </button>
+                              <button
+                                onClick={() => onDelete(event.id)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex-shrink-0"
+                              >
+                                <Trash2 size={12} />
+                                Excluir
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1075,7 +1163,88 @@ const AdminModal = ({ onClose, onSave, events, onDelete }) => {
                 </div>
               )}
             </div>
-          )}
+          ) : activeTab === 'stats' ? (
+            <div className="p-6">
+              <div className="mb-4">
+                <h3 className="text-white font-serif text-lg mb-1">Estatísticas dos Eventos</h3>
+                <p className="text-gray-500 text-xs">Visão geral da agenda</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-luxury-950 border border-luxury-600/30 rounded-xl p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-gold-500/10 p-2 rounded-lg">
+                      <Calendar size={20} className="text-gold-500" />
+                    </div>
+                    <h4 className="text-gray-400 text-xs uppercase font-bold">Total de Eventos</h4>
+                  </div>
+                  <p className="text-white text-3xl font-bold">{events?.length || 0}</p>
+                </div>
+                
+                <div className="bg-luxury-950 border border-luxury-600/30 rounded-xl p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-blue-500/10 p-2 rounded-lg">
+                      <MapPin size={20} className="text-blue-500" />
+                    </div>
+                    <h4 className="text-gray-400 text-xs uppercase font-bold">Cidades</h4>
+                  </div>
+                  <p className="text-white text-3xl font-bold">{new Set(events?.map(e => e.city) || []).size}</p>
+                </div>
+                
+                <div className="bg-luxury-950 border border-luxury-600/30 rounded-xl p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-green-500/10 p-2 rounded-lg">
+                      <CheckCircle2 size={20} className="text-green-500" />
+                    </div>
+                    <h4 className="text-gray-400 text-xs uppercase font-bold">Status Únicos</h4>
+                  </div>
+                  <p className="text-white text-3xl font-bold">{new Set(events?.map(e => e.status) || []).size}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-luxury-950 border border-luxury-600/30 rounded-xl p-4">
+                  <h4 className="text-white font-serif text-base mb-3 flex items-center gap-2">
+                    <BarChart3 size={18} className="text-gold-500" />
+                    Por Status
+                  </h4>
+                  <div className="space-y-2">
+                    {Object.entries(
+                      (events || []).reduce((acc, ev) => {
+                        acc[ev.status] = (acc[ev.status] || 0) + 1;
+                        return acc;
+                      }, {})
+                    ).map(([status, count]) => (
+                      <div key={status} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-400">{status}</span>
+                        <span className="text-white font-bold">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-luxury-950 border border-luxury-600/30 rounded-xl p-4">
+                  <h4 className="text-white font-serif text-base mb-3 flex items-center gap-2">
+                    <TrendingUp size={18} className="text-gold-500" />
+                    Por Cidade
+                  </h4>
+                  <div className="space-y-2">
+                    {Object.entries(
+                      (events || []).reduce((acc, ev) => {
+                        acc[ev.city] = (acc[ev.city] || 0) + 1;
+                        return acc;
+                      }, {})
+                    ).map(([city, count]) => (
+                      <div key={city} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-400">{city}</span>
+                        <span className="text-white font-bold">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
@@ -1083,6 +1252,21 @@ const AdminModal = ({ onClose, onSave, events, onDelete }) => {
 };
 
 // --- Agenda View Page & Modal ---
+
+// Skeleton Loader para eventos
+const SkeletonEventCard = () => (
+  <div className="bg-luxury-900 border border-luxury-600/30 rounded-2xl overflow-hidden shadow-lg animate-pulse">
+    <div className="h-48 bg-luxury-800"></div>
+    <div className="p-6">
+      <div className="h-4 bg-luxury-800 rounded w-1/3 mb-3"></div>
+      <div className="h-6 bg-luxury-800 rounded w-3/4 mb-3"></div>
+      <div className="h-4 bg-luxury-800 rounded w-1/2 mb-4"></div>
+      <div className="h-3 bg-luxury-800 rounded w-full mb-2"></div>
+      <div className="h-3 bg-luxury-800 rounded w-5/6 mb-6"></div>
+      <div className="h-10 bg-luxury-800 rounded"></div>
+    </div>
+  </div>
+);
 
 const EventModal = ({ event, onClose }) => {
   const closeButtonRef = useRef(null);
@@ -1226,6 +1410,9 @@ const AgendaPage = ({ onBack, events }) => {
   const [filteredEvents, setFilteredEvents] = useState(events);
   const [selectedCity, setSelectedCity] = useState('all');
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+  const [sortBy, setSortBy] = useState('date'); // 'date', 'city', 'status'
+  const [currentPage, setCurrentPage] = useState(1);
+  const eventsPerPage = 6;
 
   // Extrair cidades únicas dos eventos
   const cities = ['all', ...new Set(events.map(e => e.city))];
@@ -1263,7 +1450,54 @@ const AgendaPage = ({ onBack, events }) => {
       );
     }
 
+    // Ordenação
+    if (sortBy === 'city') {
+      filtered = [...filtered].sort((a, b) => a.city.localeCompare(b.city));
+    } else if (sortBy === 'status') {
+      filtered = [...filtered].sort((a, b) => a.status.localeCompare(b.status));
+    } else {
+      // Por data (padrão)
+      filtered = [...filtered].sort((a, b) => a.date.localeCompare(b.date));
+    }
+
     setFilteredEvents(filtered);
+    setCurrentPage(1); // Reset para primeira página ao filtrar
+  };
+
+  // Paginação
+  const indexOfLastEvent = currentPage * eventsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
+  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSort = (newSortBy) => {
+    setSortBy(newSortBy);
+    applyFilters(searchQuery, selectedCity);
+  };
+
+  const handleShare = async (event) => {
+    const shareData = {
+      title: event.title,
+      text: `${event.description}\\n\\n📍 ${event.city} | 📅 ${event.date}`,
+      url: window.location.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('Erro ao compartilhar:', err);
+      }
+    } else {
+      // Fallback: copiar link
+      navigator.clipboard.writeText(window.location.href);
+      alert('Link copiado!');
+    }
   };
 
   return (
@@ -1374,9 +1608,44 @@ const AgendaPage = ({ onBack, events }) => {
 
       {/* Grid Content */}
       <main className="container mx-auto px-6 pb-24 flex-grow">
+        {/* Ordenação */}
+        <div className="flex items-center justify-between mb-6">
+          <p className="text-gray-400 text-sm">
+            {filteredEvents.length} evento{filteredEvents.length !== 1 ? 's' : ''} encontrado{filteredEvents.length !== 1 ? 's' : ''}
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Ordenar por:</span>
+            <button
+              onClick={() => handleSort('date')}
+              className={`px-3 py-1.5 text-xs rounded-lg transition-all ${
+                sortBy === 'date' ? 'bg-gold-600 text-white' : 'bg-luxury-800 text-gray-400 hover:bg-luxury-700'
+              }`}
+            >
+              Data
+            </button>
+            <button
+              onClick={() => handleSort('city')}
+              className={`px-3 py-1.5 text-xs rounded-lg transition-all ${
+                sortBy === 'city' ? 'bg-gold-600 text-white' : 'bg-luxury-800 text-gray-400 hover:bg-luxury-700'
+              }`}
+            >
+              Cidade
+            </button>
+            <button
+              onClick={() => handleSort('status')}
+              className={`px-3 py-1.5 text-xs rounded-lg transition-all ${
+                sortBy === 'status' ? 'bg-gold-600 text-white' : 'bg-luxury-800 text-gray-400 hover:bg-luxury-700'
+              }`}
+            >
+              Status
+            </button>
+          </div>
+        </div>
+
         {filteredEvents.length > 0 ? (
+          <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredEvents.map((event) => (
+            {currentEvents.map((event) => (
               <div key={event.id} className="bg-luxury-900 rounded-2xl overflow-hidden border border-luxury-600/20 hover:border-gold-500/40 shadow-xl hover:shadow-2xl transition-all duration-500 group flex flex-col">
                 
                 {/* Card Header Image */}
@@ -1425,9 +1694,20 @@ const AgendaPage = ({ onBack, events }) => {
                     </div>
                   </div>
                   
-                  <p className="text-gray-400 text-sm leading-relaxed mb-6 flex-grow line-clamp-3">
+                  <p className="text-gray-400 text-sm leading-relaxed mb-4 flex-grow line-clamp-3">
                     {event.description}
                   </p>
+
+                  <div className="flex gap-2 mb-3">
+                    <button 
+                      onClick={() => handleShare(event)}
+                      className="flex-1 bg-luxury-800 hover:bg-luxury-700 text-gray-300 font-bold uppercase tracking-widest text-xs py-3 rounded-xl transition-all shadow-lg flex justify-center items-center gap-2"
+                      aria-label="Compartilhar evento"
+                    >
+                      <Share2 size={14} />
+                      Compartilhar
+                    </button>
+                  </div>
 
                   <button 
                     onClick={() => setSelectedEvent(event)}
@@ -1441,6 +1721,42 @@ const AgendaPage = ({ onBack, events }) => {
               </div>
             ))}
           </div>
+
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-12">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-luxury-800 text-gray-300 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-luxury-700 transition-all"
+              >
+                <ArrowLeft size={16} />
+              </button>
+              
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => handlePageChange(i + 1)}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    currentPage === i + 1
+                      ? 'bg-gold-600 text-white'
+                      : 'bg-luxury-800 text-gray-300 hover:bg-luxury-700'
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-luxury-800 text-gray-300 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-luxury-700 transition-all"
+              >
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          )}
+          </>
         ) : (
           <div className="text-center py-20">
             <Search size={48} className="mx-auto mb-4 text-gray-600 opacity-50" />
@@ -1719,6 +2035,15 @@ const App = () => {
   const [currentPdfId, setCurrentPdfId] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+  const [toast, setToast] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  
+  // Novos estados para funcionalidades avançadas
+  const [sortBy, setSortBy] = useState('date'); // 'date', 'city', 'status'
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [previewEvent, setPreviewEvent] = useState(null);
+  const eventsPerPage = 6;
 
   // Monitor authentication state
   useEffect(() => {
@@ -1728,15 +2053,32 @@ const App = () => {
     return () => unsubscribe();
   }, []);
 
-  // Load events from Firestore on mount
+  // Load events from Firestore on mount com cache
   useEffect(() => {
     const loadEvents = async () => {
       setIsLoadingEvents(true);
+      
+      // Tentar carregar do cache primeiro
+      const cachedEvents = getFromCache();
+      if (cachedEvents && cachedEvents.length > 0) {
+        setEvents(cachedEvents);
+        setIsLoadingEvents(false);
+        // Atualizar do Firestore em background
+        const firestoreEvents = await getAllEvents();
+        if (firestoreEvents.length > 0) {
+          setEvents(firestoreEvents);
+          saveToCache(firestoreEvents);
+        }
+        return;
+      }
+      
+      // Se não há cache, carregar do Firestore
       const firestoreEvents = await getAllEvents();
       
       // If Firestore has events, use them; otherwise use INITIAL_EVENTS
       if (firestoreEvents.length > 0) {
         setEvents(firestoreEvents);
+        saveToCache(firestoreEvents);
       } else {
         setEvents(INITIAL_EVENTS);
       }
@@ -1806,13 +2148,14 @@ const App = () => {
       // Reload events from Firestore to get the new one with proper ID
       const updatedEvents = await getAllEvents();
       setEvents(updatedEvents);
+      setToast({ type: 'success', message: 'Evento criado com sucesso!' });
       
       // Keep modal open but switch to manage tab (handled by AdminModal internally)
       // No need to change view here
     } else {
-      // Handle error (could show toast notification)
+      // Handle error with toast
       console.error('Failed to create event:', result.error);
-      alert(result.error);
+      setToast({ type: 'error', message: result.error || 'Erro ao criar evento' });
     }
   };
 
@@ -1838,16 +2181,49 @@ const App = () => {
   };
 
   const handleDeleteEvent = async (eventId) => {
+    // Show confirmation
+    setConfirmDelete(eventId);
+  };
+
+  const confirmDeleteEvent = async () => {
+    if (!confirmDelete) return;
+    
     // Delete from Firestore
-    const result = await deleteEventFromDB(eventId);
+    const result = await deleteEventFromDB(confirmDelete);
     
     if (result.success) {
       // Reload events from Firestore to ensure sync
       const updatedEvents = await getAllEvents();
       setEvents(updatedEvents);
+      setToast({ type: 'success', message: 'Evento excluído com sucesso!' });
     } else {
       console.error('Failed to delete event:', result.error);
-      alert(result.error);
+      setToast({ type: 'error', message: result.error || 'Erro ao excluir evento' });
+    }
+    
+    setConfirmDelete(null);
+  };
+
+  const handleUpdateEvent = async (eventId, eventData) => {
+    const result = await updateEvent(eventId, eventData);
+    
+    if (result.success) {
+      const updatedEvents = await getAllEvents();
+      setEvents(updatedEvents);
+      setToast({ type: 'success', message: 'Evento atualizado com sucesso!' });
+    } else {
+      console.error('Failed to update event:', result.error);
+      setToast({ type: 'error', message: result.error || 'Erro ao atualizar evento' });
+    }
+  };
+
+  const handleLogout = async () => {
+    const result = await firebaseLogout();
+    if (result.success) {
+      setIsAdminOpen(false);
+      setToast({ type: 'info', message: 'Logout realizado com sucesso' });
+    } else {
+      setToast({ type: 'error', message: 'Erro ao fazer logout' });
     }
   };
 
@@ -1867,8 +2243,96 @@ const App = () => {
     setIsAdminOpen(true);
   };
 
+  // Funções de compartilhamento
+  const handleShareEvent = async (event) => {
+    const shareData = {
+      title: event.title,
+      text: `${event.description}\\n\\n📍 ${event.city} | 📅 ${event.date}`,
+      url: window.location.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        setToast({ type: 'success', message: 'Evento compartilhado!' });
+      } catch (err) {
+        console.log('Erro ao compartilhar:', err);
+      }
+    } else {
+      // Fallback: copiar link
+      navigator.clipboard.writeText(window.location.href);
+      setToast({ type: 'info', message: 'Link copiado para área de transferência' });
+    }
+  };
+
+  // Calcular estatísticas
+  const getStats = () => {
+    const totalEvents = events.length;
+    const byStatus = events.reduce((acc, ev) => {
+      acc[ev.status] = (acc[ev.status] || 0) + 1;
+      return acc;
+    }, {});
+    const byCity = events.reduce((acc, ev) => {
+      acc[ev.city] = (acc[ev.city] || 0) + 1;
+      return acc;
+    }, {});
+    return { totalEvents, byStatus, byCity };
+  };
+
   return (
     <main className="font-sans text-gray-200 selection:bg-gold-600 selection:text-white min-h-screen relative">
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast 
+          type={toast.type} 
+          message={toast.message} 
+          onClose={() => setToast(null)} 
+        />
+      )}
+
+      {/* WhatsApp Flutuante */}
+      <a
+        href={WA_LINK(WHATSAPP_PHONE)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-[80] bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl transition-all hover:scale-110 animate-pulse hover:animate-none"
+        aria-label="Falar no WhatsApp"
+      >
+        <MessageCircle size={28} />
+      </a>
+
+      {/* Confirm Delete Dialog */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 animate-fade-in">
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setConfirmDelete(null)}></div>
+          <div className="relative bg-luxury-900 w-full max-w-md rounded-3xl border border-red-900/30 shadow-2xl overflow-hidden p-8">
+            <div className="text-center">
+              <div className="bg-red-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="text-red-500" size={32} />
+              </div>
+              <h3 className="text-white font-serif text-2xl mb-3">Excluir Evento?</h3>
+              <p className="text-gray-400 text-sm mb-6">
+                Esta ação não pode ser desfeita. O evento será permanentemente removido do banco de dados.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmDelete(null)}
+                  className="flex-1 px-6 py-3 bg-luxury-800 hover:bg-luxury-700 text-gray-300 font-bold text-sm rounded-xl transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmDeleteEvent}
+                  className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-bold text-sm rounded-xl transition-all"
+                >
+                  Sim, Excluir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Desktop: Wallpaper background */}
       <div className="hidden md:block fixed inset-0 z-0">
         <img 
@@ -1904,6 +2368,8 @@ const App = () => {
                 onSave={handleAddEvent}
                 events={events}
                 onDelete={handleDeleteEvent}
+                onLogout={handleLogout}
+                onUpdate={handleUpdateEvent}
               />
             )}
             
@@ -1946,6 +2412,8 @@ const App = () => {
             onSave={handleAddEvent}
             events={events}
             onDelete={handleDeleteEvent}
+            onLogout={handleLogout}
+            onUpdate={handleUpdateEvent}
           />
         )}
         

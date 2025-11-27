@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "react-image-crop/dist/ReactCrop.css";
 
 /* Tailwind v4 Theme Configuration */
 @theme {
@@ -126,3 +127,39 @@
   .backdrop-blur-sm { --tw-backdrop-blur: blur(4px); -webkit-backdrop-filter: var(--tw-backdrop-blur); backdrop-filter: var(--tw-backdrop-blur); }
   .backdrop-blur-xl { --tw-backdrop-blur: blur(12px); -webkit-backdrop-filter: var(--tw-backdrop-blur); backdrop-filter: var(--tw-backdrop-blur); }
 }
+
+/* React Image Crop - Custom Theme */
+.ReactCrop {
+  position: relative;
+  display: inline-block;
+  cursor: crosshair;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.ReactCrop__crop-selection {
+  border: 2px solid #d4a574;
+  box-shadow: 0 0 0 9999em rgba(0, 0, 0, 0.5);
+}
+
+.ReactCrop__drag-handle {
+  background-color: #d4a574;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 8px rgba(212, 165, 116, 0.6);
+  width: 12px;
+  height: 12px;
+}
+
+.ReactCrop__drag-handle:hover {
+  background-color: #b69a55;
+  transform: scale(1.2);
+}
+
+.ReactCrop__drag-bar {
+  background-color: transparent;
+}
+
+.ReactCrop__drag-bar:hover {
+  background-color: rgba(212, 165, 116, 0.3);
+}
+
