@@ -315,7 +315,7 @@ const Header = ({ onNavigate }) => {
 
 const Hero = ({ onNavigate }) => {
   return (
-    <section className="relative min-h-[70vh] md:min-h-[85vh] flex flex-col justify-end overflow-hidden bg-luxury-950 rounded-b-[3rem] md:rounded-b-[5rem] shadow-2xl shadow-black/80 z-10">
+    <section className="relative min-h-[80vh] md:min-h-[90vh] flex flex-col justify-end overflow-hidden bg-luxury-950 rounded-b-[3rem] md:rounded-b-[5rem] shadow-2xl shadow-black/80 z-10">
       
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
@@ -327,26 +327,26 @@ const Hero = ({ onNavigate }) => {
           alt="Adriano Rodrigo Mentor"
           className="w-full h-full object-cover object-center mix-blend-normal"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-luxury-950/90"></div>
+        {/* Gradient mais forte no bottom para destacar texto */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/85"></div>
       </div>
 
-      {/* Content - Positioned at very bottom */}
+      {/* Content - Posicionado bem embaixo, longe do rosto */}
       <div className="relative z-10 container mx-auto px-6 pb-8 md:pb-12">
-        <div className="max-w-md md:ml-4 lg:ml-12 border-l border-gold-500/20 pl-6 md:pl-8 py-4">
-          <p className="text-gold-500/70 text-[9px] font-normal tracking-[0.15em] uppercase mb-3 shadow-black drop-shadow-md">
+        <div className="max-w-md md:ml-8 lg:ml-16 border-l border-gold-300 pl-6 md:pl-8 py-3">
+          <p className="text-gold-200 text-[9px] font-bold tracking-[0.2em] uppercase mb-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
             Mentor de Posicionamento
           </p>
           
-          <h1 className="font-sans text-xl md:text-3xl text-white mb-4 leading-tight drop-shadow-lg font-light tracking-tight">
-            Adriano <br className="hidden md:block"/>
-            <span className="text-gold-200/90">Rodrigo</span>
+          <h1 className="font-sans text-2xl md:text-3xl text-white mb-3 leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] font-light tracking-tight">
+            Adriano <span className="text-gold-200 font-normal">Rodrigo</span>
           </h1>
 
-          <div className="space-y-2 mb-6">
-            <p className="text-xs md:text-sm text-gray-400 font-light drop-shadow-md max-w-xs leading-relaxed">
+          <div className="space-y-1.5 mb-4">
+            <p className="text-xs md:text-sm text-white font-light drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] leading-snug">
               Você não precisa de mais velocidade.
             </p>
-            <p className="text-sm md:text-base text-gold-400 font-light italic drop-shadow-md">
+            <p className="text-sm md:text-base text-gold-200 font-medium drop-shadow-[0_2px-10px_rgba(0,0,0,0.9)]">
               Precisa de direção.
             </p>
           </div>
@@ -357,7 +357,7 @@ const Hero = ({ onNavigate }) => {
                 e.preventDefault();
                 smoothScrollTo('#metodo');
               }}
-              className="inline-flex justify-center items-center gap-2 px-5 py-2.5 bg-gold-600 text-white tracking-wide text-[10px] font-normal hover:bg-gold-500 transition-all duration-300 shadow-lg shadow-black/40 rounded-full w-fit cursor-pointer focus:outline-none focus:ring-2 focus:ring-gold-400 focus:ring-offset-2 focus:ring-offset-luxury-950"
+              className="inline-flex justify-center items-center gap-2 px-5 py-2.5 bg-gold-500 text-black tracking-wide text-[10px] font-bold hover:bg-gold-400 transition-all duration-300 shadow-2xl hover:shadow-gold-500/50 rounded-full w-fit cursor-pointer focus:outline-none focus:ring-2 focus:ring-gold-400 focus:ring-offset-2 focus:ring-offset-luxury-950"
               aria-label="Conhecer a metodologia Rota 360"
             >
               Conheça a Rota 360
@@ -367,7 +367,7 @@ const Hero = ({ onNavigate }) => {
                 e.preventDefault();
                 onNavigate && onNavigate('about');
               }}
-              className="inline-flex justify-center items-center gap-2 px-5 py-2.5 border border-gold-600/30 text-gold-100 tracking-wide text-[10px] font-normal hover:bg-gold-600/10 hover:border-gold-500 transition-all duration-300 backdrop-blur-sm rounded-full w-fit cursor-pointer focus:outline-none focus:ring-2 focus:ring-gold-400 focus:ring-offset-2 focus:ring-offset-luxury-950"
+              className="inline-flex justify-center items-center gap-2 px-5 py-2.5 border-2 border-white bg-white/90 text-black tracking-wide text-[10px] font-bold hover:bg-white hover:border-white transition-all duration-300 shadow-2xl rounded-full w-fit cursor-pointer focus:outline-none focus:ring-2 focus:ring-gold-400 focus:ring-offset-2 focus:ring-offset-luxury-950"
               aria-label="Saber mais sobre Adriano Rodrigo"
             >
               Sobre Mim
@@ -1523,30 +1523,32 @@ const AgendaPage = ({ onBack, events }) => {
               alt="Agenda Hero"
               className="w-full h-full object-cover" 
             />
+            {/* Gradient para melhor contraste do texto */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60"></div>
         </div>
 
         {/* Nav (Absolute on top) */}
         <nav className="relative z-20 container mx-auto px-6 py-6 flex justify-between items-center">
           <button 
             onClick={onBack}
-            className="flex items-center gap-2 text-white/80 hover:text-gold-400 transition-colors text-sm uppercase tracking-widest font-bold group bg-black/30 backdrop-blur-md px-4 py-2 rounded-full border border-white/5"
+            className="flex items-center gap-2 text-white hover:text-gold-300 transition-colors text-sm uppercase tracking-widest font-bold group bg-black/50 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-2xl"
           >
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             Voltar
           </button>
-           <div className="hidden md:flex items-center gap-2 border border-white/5 rounded-full px-4 py-1.5 bg-black/30 backdrop-blur-md">
-            <div className="w-2 h-2 rounded-full bg-gold-500 animate-pulse"></div>
-            <span className="text-xs text-gray-400 font-medium">Próximos Eventos Confirmados</span>
+           <div className="hidden md:flex items-center gap-2 border border-white/20 rounded-full px-4 py-1.5 bg-black/50 backdrop-blur-md shadow-lg">
+            <div className="w-2 h-2 rounded-full bg-gold-400 animate-pulse"></div>
+            <span className="text-xs text-white font-medium drop-shadow-lg">Próximos Eventos Confirmados</span>
           </div>
         </nav>
 
         {/* Hero Content */}
         <div className="relative z-10 flex-grow flex flex-col justify-center items-center text-center px-4">
-          <span className="text-gold-600 font-light tracking-[0.2em] text-[10px] uppercase mb-4 animate-fade-in">Programação Oficial</span>
-          <h1 className="font-sans text-3xl md:text-4xl text-white mb-6 drop-shadow-2xl animate-fade-up font-light tracking-tight">
+          <span className="text-gold-200 font-bold tracking-[0.25em] text-[10px] uppercase mb-4 animate-fade-in drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">Programação Oficial</span>
+          <h1 className="font-sans text-3xl md:text-4xl text-white mb-6 drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] animate-fade-up font-light tracking-tight">
             Agenda & Imersões
           </h1>
-          <p className="text-gray-400 max-w-xl mx-auto text-xs md:text-sm leading-relaxed font-light animate-fade-up opacity-80">
+          <p className="text-white max-w-xl mx-auto text-xs md:text-sm leading-relaxed font-light animate-fade-up drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
             Garanta seu lugar nos próximos passos da jornada Rota 360. 
             Experiências presenciais para transformar sua direção.
           </p>
@@ -1811,13 +1813,36 @@ const PdfViewerPage = ({ pdfId, onBack }) => {
         <span className="text-sm font-medium">Voltar</span>
       </button>
 
-      {/* Full screen PDF - absolute positioning to fill entire viewport */}
+      {/* Full screen PDF - com fallback para iOS */}
       {src ? (
-        <iframe 
-          src={src} 
-          className="absolute inset-0 w-full h-full border-0" 
-          title={card?.title || 'Documento'}
-        ></iframe>
+        <>
+          {/* Tentar com iframe primeiro (funciona em desktop) */}
+          <iframe 
+            src={`${src}#view=FitH&toolbar=0&navpanes=0`}
+            className="absolute inset-0 w-full h-full border-0 md:block hidden" 
+            title={card?.title || 'Documento'}
+          ></iframe>
+          
+          {/* Fallback para mobile/iOS com object */}
+          <object
+            data={`${src}#view=FitH&toolbar=0`}
+            type="application/pdf"
+            className="absolute inset-0 w-full h-full border-0 md:hidden"
+          >
+            <div className="w-full h-full flex flex-col items-center justify-center p-6">
+              <p className="text-gray-400 mb-4 text-center">Este navegador não suporta visualização direta de PDF.</p>
+              <a 
+                href={src}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-gold-600 hover:bg-gold-500 text-white font-bold rounded-xl transition-all"
+              >
+                Baixar PDF
+              </a>
+            </div>
+          </object>
+        </>
       ) : (
         <div className="w-full h-full flex items-center justify-center">
           <p className="text-gray-500">PDF não encontrado</p>
@@ -1854,11 +1879,11 @@ const AboutModal = ({ onClose }) => {
         
         {/* Header with Image */}
         <div className="relative h-48 md:h-64 overflow-hidden">
-          <img 
-            src={`${import.meta.env.BASE_URL}hero-v2.png`}
-            alt="Adriano Rodrigo"
-            className="w-full h-full object-cover grayscale-[30%]"
-          />
+            <img 
+              src="/bg-sobremim.png"
+              alt="Sobre Mim"
+              className="w-full h-full object-cover grayscale-[30%]"
+            />
           <div className="absolute inset-0 bg-gradient-to-t from-luxury-900 via-luxury-900/50 to-transparent"></div>
           
           <button 
