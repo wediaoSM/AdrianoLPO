@@ -1890,7 +1890,7 @@ const AboutModal = ({ onClose }) => {
         {/* Header with Image */}
         <div className="relative h-48 md:h-64 overflow-hidden">
             <img
-              src="/bg-sobremim.png"
+              src={`${import.meta.env.BASE_URL}bg-sobremim.png`}
               alt="Sobre Mim"
               className="w-full h-full object-cover object-top grayscale-[30%]"
             />
