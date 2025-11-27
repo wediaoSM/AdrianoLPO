@@ -297,7 +297,7 @@ const Hero = () => {
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="/hero.png"
+          src={`${import.meta.env.BASE_URL}hero.png`}
           onError={(e) => {
             e.currentTarget.src = "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1200&auto=format&fit=crop";
           }}
@@ -1235,7 +1235,7 @@ const AgendaPage = ({ onBack, events }) => {
         {/* Background */}
         <div className="absolute inset-0 z-0">
             <img 
-              src="/hero-agenda.png"
+              src={`${import.meta.env.BASE_URL}hero-agenda.png`}
               alt="Agenda Hero"
               className="w-full h-full object-cover" 
             />
@@ -1601,7 +1601,7 @@ const App = () => {
       <div className="hidden md:block relative z-10 min-h-screen py-8">
         <div className="mx-auto w-[1200px] max-w-[90vw] shadow-2xl rounded-3xl border border-luxury-700/50 overflow-hidden">
           {/* Background image inside container */}
-          <div className="absolute inset-0 z-0 bg-center bg-cover bg-no-repeat" style={{ backgroundImage: "url('/bg-central.png')" }} />
+          <div className="absolute inset-0 z-0 bg-center bg-cover bg-no-repeat" style={{ backgroundImage: `url('${import.meta.env.BASE_URL}bg-central.png')` }} />
           <div className="relative z-10 bg-luxury-950/80">
             <CookieConsent />
             
