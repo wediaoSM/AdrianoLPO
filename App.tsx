@@ -239,8 +239,10 @@ const Header = ({ onNavigate }) => {
               href={link.href}
               onClick={(e) => {
                 e.preventDefault();
-                if (link.action && link.action === 'agenda') {
+                if (link.action === 'agenda') {
                   onNavigate && onNavigate('agenda');
+                } else if (link.action === 'about') {
+                  onNavigate && onNavigate('about');
                 } else {
                   smoothScrollTo(link.href);
                 }
@@ -284,10 +286,12 @@ const Header = ({ onNavigate }) => {
                 onClick={(e) => {
                   e.preventDefault();
                   setIsOpen(false);
-                  if (link.action && link.action === 'agenda') {
+                  if (link.action === 'agenda') {
                     onNavigate && onNavigate('agenda');
+                  } else if (link.action === 'about') {
+                    onNavigate && onNavigate('about');
                   } else {
-                    smoothScrollTo(link.href);
+                    setTimeout(() => smoothScrollTo(link.href), 100);
                   }
                 }}
                 className="w-full max-w-[380px] flex items-center gap-4 rounded-xl px-6 py-4 bg-luxury-900 border border-luxury-800/30 hover:border-gold-500/30 transition-all justify-center"
